@@ -11,12 +11,27 @@ api = Blueprint('api', __name__)
 # Allow CORS requests to this API
 CORS(api)
 
+@api.route('/register', methods = ['POST'])
+def register_user():
+    print(request.get_json())
+    name = request.json.get('name')
+    email = request.json.get('email')
+    password = request.json.get('password')
 
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
+    if not email:
+        return jsonify({"messagge": "Email es requerido"}), 400
+    if not password:
+        return jsonify({"messagge": "Password es requerido"}), 400
+    
+    found = User.query.filter_by(email=email).first()
+    if found:
+        return jsonify({"messagge":"Este email existe"}), 400
+    
+    user = User()
+    user.name= name
+    user.email = email
+    #user.password = generate_password_hash(password)
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
-
-    return jsonify(response_body), 200
+    user.save()
+    
+    return jsonify({"success":"Registro satisfactorio, por favor iniciar sesión"}), 200
